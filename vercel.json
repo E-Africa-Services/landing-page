@@ -2,11 +2,11 @@
  "rewrites": [
     {
       "source": "/amplify.app/:path*",
-      "destination": "https://amplify-app.vercel.app/:path*"
+      "destination": "https://e-amplify.vercel.app/:path*"
     },
     {
       "source": "/amplify.app",
-      "destination": "https://amplify-app.vercel.app/"
+      "destination": "https://e-amplify.vercel.app/"
     }
   ],
   "headers": [

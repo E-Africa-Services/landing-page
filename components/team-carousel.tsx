@@ -1,4 +1,5 @@
 "use client"
+import Image from "next/image"
 
 import { useState, useEffect } from "react"
 
@@ -6,33 +7,29 @@ const teamMembers = [
   {
     name: "Clinton Imemeh",
     role: "Founder & CEO",
-    image: "/professional-man-ceo.jpg",
+    image: "/clinton.jpg",
   },
   {
     name: "Gideon Adesoji",
     role: "Operations Manager",
-    image: "/professional-man-operations.jpg",
+    image: "/gideon.jpeg",
   },
   {
     name: "Paul Joel Osagie",
     role: "Backend Cloud Engineer",
-    image: "/professional-man-engineer.jpg",
+    image: "/paul.jpeg",
   },
   {
     name: "Godstime Erubami",
     role: "Fullstack Engineer",
-    image: "/professional-man-developer.jpg",
+    image: "/gt-new.jpg",
   },
   {
     name: "Abigail Patrick",
     role: "Digital Marketer",
-    image: "/professional-woman-marketer.jpg",
+    image: "/abigai.jpeg",
   },
-  {
-    name: "Aduraagbemi Odukoya",
-    role: "Media Manager",
-    image: "/professional-woman-media.jpg",
-  },
+
 ]
 
 export default function TeamCarousel() {
@@ -81,29 +78,31 @@ export default function TeamCarousel() {
         {/* Carousel Container */}
         <div className="relative">
           {/* Team Members Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 sm:max-w-6xl mx-auto">
             {getVisibleMembers().map((member, idx) => (
               <div
                 key={idx}
-                className="group animate-fade-in"
+                className="group animate-fade-in w-full"
                 style={{
                   animation: `fadeIn 0.6s ease-in-out ${idx * 0.1}s`,
                 }}
               >
                 {/* Portrait Image - Small and Professional */}
                 <div className="relative mb-4 overflow-hidden rounded-lg bg-muted h-64 w-full">
-                  <img
+                  <Image
+                    fill
                     src={member.image || "/placeholder.svg?height=256&width=256&query=professional portrait"}
                     alt={member.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover object-[center_10%] group-hover:scale-105 transition-transform duration-500"
                   />
-                  {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                  <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                     <div className="text-white">
-                      <p className="font-semibold text-sm">{member.role}</p>
+                      <h4 className="font-semibold text-base">{member.name}</h4>
+                      <p className="font-medium text-sm">{member.role}</p>
                     </div>
                   </div>
                 </div>
+
 
                 {/* Member Info */}
                 <div className="text-center">

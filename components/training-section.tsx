@@ -32,7 +32,7 @@ export default function TrainingSection() {
   }, [])
 
   return (
-    <section id="training" className="py-20 bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+    <section id="training" className="py-20 bg-linear-to-br from-primary/5 via-background to-secondary/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-foreground mb-4">Upcoming Training Programs</h2>
@@ -56,7 +56,7 @@ export default function TrainingSection() {
             </div>
 
             {/* Countdown Timer */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="flex flex-row flex-wrap justify-center  gap-4">
               {[
                 { label: "Days", value: timeLeft.days },
                 { label: "Hours", value: timeLeft.hours },

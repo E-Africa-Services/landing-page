@@ -1,36 +1,33 @@
 "use client"
+import Image from 'next/image';
 
 const teamMembers = [
   {
     name: "Clinton Imemeh",
     role: "Founder & CEO",
-    image: "/professional-man-ceo.jpg",
+    image: "/clinton.jpg",
   },
   {
     name: "Gideon Adesoji",
     role: "Operations Manager",
-    image: "/professional-man-operations.jpg",
+    image: "/gideon.jpg",
   },
   {
     name: "Paul Joel Osagie",
     role: "Backend Cloud Engineer",
-    image: "/professional-man-engineer.jpg",
+    image: "/paul.jpg",
   },
   {
     name: "Godstime Erubami",
     role: "Fullstack Engineer",
-    image: "/professional-man-developer.jpg",
+    image: "/gt.jpg",
   },
   {
     name: "Abigail Patrick",
     role: "Digital Marketer",
-    image: "/professional-woman-marketer.jpg",
+    image: "/abigail.jpg",
   },
-  {
-    name: "Aduraagbemi Odukoya",
-    role: "Media Manager",
-    image: "/professional-woman-media.jpg",
-  },
+ 
 ]
 
 export default function TeamSection() {
@@ -48,7 +45,8 @@ export default function TeamSection() {
           {teamMembers.map((member, idx) => (
             <div key={idx} className="group">
               <div className="relative mb-4 overflow-hidden rounded-lg bg-muted h-80">
-                <img
+                <Image
+                  fill
                   src={member.image || "/placeholder.svg"}
                   alt={member.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

@@ -1,8 +1,10 @@
 "use client"
 
+import Link from "next/link"
+
 export default function Hero({ onSelectUserType }: { onSelectUserType: (type: "companies" | "individuals") => void }) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-muted overflow-hidden">
       {/* Background accent */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
@@ -20,18 +22,20 @@ export default function Hero({ onSelectUserType }: { onSelectUserType: (type: "c
         </p>
 
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-          <button
+          <Link
+            href="/services?type=companies"
+            className="px-8 py-4 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all hover:shadow-lg text-lg inline-block text-center"
             onClick={() => onSelectUserType("companies")}
-            className="px-8 py-4 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all hover:shadow-lg text-lg"
           >
             For Companies
-          </button>
-          <button
+          </Link>
+          <Link
+            href="/services?type=individuals"
+            className="px-8 py-4 bg-secondary text-secondary-foreground rounded-lg font-semibold hover:bg-secondary/90 transition-all hover:shadow-lg text-lg inline-block text-center"
             onClick={() => onSelectUserType("individuals")}
-            className="px-8 py-4 bg-secondary text-secondary-foreground rounded-lg font-semibold hover:bg-secondary/90 transition-all hover:shadow-lg text-lg"
           >
             For Individuals
-          </button>
+          </Link>
         </div>
 
         <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-8">

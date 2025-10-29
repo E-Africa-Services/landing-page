@@ -1,5 +1,6 @@
 "use client"
-
+import Link from "next/link";
+import Image from "next/image"
 export default function Footer() {
   return (
     <footer className="bg-foreground text-background py-16">
@@ -7,10 +8,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-                <span className="text-foreground font-bold text-sm">EA</span>
-              </div>
-              <span className="font-bold text-lg">E-Africa Services</span>
+            <Link href="/" className="shrink-0">
+            <div className="flex items-center gap-2">
+              {/*  logo */}
+              <Image src="/logo-white.png" alt="E-Africa Logo" width={140} height={140} />            
+            </div>
+            </Link>
             </div>
             <p className="text-background/80">Redefining learning. Empowering Africa.</p>
           </div>
@@ -81,9 +84,9 @@ export default function Footer() {
                 </a>
               </li>
               <li className="pt-2">
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                   <a
-                    href="https://linkedin.com"
+                    href="https://www.linkedin.com/company/e-africa-services"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-background transition-colors"
@@ -91,15 +94,15 @@ export default function Footer() {
                     LinkedIn
                   </a>
                   <a
-                    href="https://twitter.com"
+                    href="https://x.com/empower__africa?s=21"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-background transition-colors"
                   >
-                    Twitter
+                    X/Twitter
                   </a>
                   <a
-                    href="https://facebook.com"
+                    href="https://web.facebook.com/profile.php?id=61562074914381"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-background transition-colors"
@@ -107,7 +110,7 @@ export default function Footer() {
                     Facebook
                   </a>
                   <a
-                    href="https://instagram.com"
+                    href="https://www.instagram.com/e.africa1?igsh=MWhuanR1ODh4NGZmcA%3D%3D&utm_source=qr"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-background transition-colors"
@@ -115,12 +118,20 @@ export default function Footer() {
                     Instagram
                   </a>
                   <a
-                    href="https://tiktok.com"
+                    href="https://www.tiktok.com/@e_africa01?_t=ZS-8zrl8nXXinB&_r=1"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-background transition-colors"
                   >
                     TikTok
+                  </a>
+                  <a
+                    href="https://youtube.com/@e-africaserices?si=CbConmy1ptbJny3Z"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-background transition-colors"
+                  >
+                    YouTube
                   </a>
                 </div>
               </li>

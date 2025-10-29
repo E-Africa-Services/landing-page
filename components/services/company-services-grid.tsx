@@ -81,7 +81,7 @@ export default function CompanyServicesGrid({
               priority={idx < 3}
             />
             {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+            <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent"></div>
           </div>
 
           {/* Title and Description positioned at bottom on image */}
@@ -96,7 +96,7 @@ export default function CompanyServicesGrid({
 
           {/* Hover State - Content slides up with detailed info */}
           <div
-            className={`absolute inset-0 bg-gradient-to-b from-primary/95 to-primary/90 backdrop-blur p-6 flex flex-col justify-between transition-all duration-500 ${
+            className={`absolute inset-0 bg-linear-to-b from-primary/95 to-primary/90 backdrop-blur p-6 flex flex-col justify-between transition-all duration-500 ${
               hoveredIndex === idx ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
           >

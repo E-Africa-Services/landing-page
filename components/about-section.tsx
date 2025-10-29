@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
+
 
 export default function AboutSection() {
   const [isVisible, setIsVisible] = useState(false)
@@ -25,22 +27,22 @@ export default function AboutSection() {
     {
       title: "Expert Training",
       description: "World-class training programs designed by industry experts for real-world impact",
-      icon: "📚",
+      icon: "/book-preview.png",
     },
     {
       title: "Strategic Consulting",
       description: "Tailored consulting services to optimize your team's performance and growth",
-      icon: "🎯",
+      icon: "/strategy-1.png",
     },
     {
       title: "Talent Placement",
       description: "Connect with top African talent across multiple industries and skill levels",
-      icon: "👥",
+      icon: "/light_brain-preview.png",
     },
     {
       title: "Career Development",
       description: "Personalized mentorship and coaching to accelerate your professional journey",
-      icon: "🚀",
+      icon: "/career-preview.png",
     },
   ]
 
@@ -99,7 +101,13 @@ export default function AboutSection() {
                 className="p-6 bg-background rounded-lg border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300 group"
               >
                 <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
-                  {feature.icon}
+                  <Image
+                    src={feature.icon}
+                    alt={feature.title}
+                    width={68}
+                    height={68}
+                    className="inline-block"
+                  />
                 </div>
                 <h4 className="font-semibold text-foreground mb-2">{feature.title}</h4>
                 <p className="text-sm text-muted-foreground">{feature.description}</p>

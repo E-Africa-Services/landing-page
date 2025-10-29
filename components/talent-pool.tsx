@@ -4,6 +4,7 @@ import { useState } from "react"
 
 export default function TalentPool() {
   const [step, setStep] = useState(1)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -45,10 +46,92 @@ export default function TalentPool() {
       ...prev,
       skills: prev.skills.includes(skill) ? prev.skills.filter((s) => s !== skill) : [...prev.skills, skill],
     }))
+    
+    // Clear skills validation error when user selects a skill
+    if (validationErrors.skills) {
+      setValidationErrors((prev) => {
+        const updated = { ...prev }
+        delete updated.skills
+        return updated
+      })
+    }
+  }
+
+  // Validation functions for each step
+  const validateStep1 = () => {
+    const errors: Record<string, string> = {}
+    
+    if (!formData.fullName.trim()) errors.fullName = "Full name is required"
+    if (!formData.email.trim()) {
+      errors.email = "Email is required"
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Please enter a valid email address"
+    }
+    if (!formData.country) errors.country = "Country is required"
+    
+    return errors
+  }
+
+  const validateStep2 = () => {
+    const errors: Record<string, string> = {}
+    
+    if (!formData.fieldOfExperience) errors.fieldOfExperience = "Field of experience is required"
+    if (!formData.experienceLevel) errors.experienceLevel = "Experience level is required"
+    if (!formData.cv) errors.cv = "CV upload is required"
+    
+    return errors
+  }
+
+  const validateStep3 = () => {
+    const errors: Record<string, string> = {}
+    
+    if (formData.skills.length === 0) errors.skills = "Please select at least one skill"
+    
+    return errors
   }
 
   const handleNext = () => {
-    if (step < 4) setStep(step + 1)
+    let errors: Record<string, string> = {}
+    
+    if (step === 1) {
+      errors = validateStep1()
+    } else if (step === 2) {
+      errors = validateStep2()
+    } else if (step === 3) {
+      errors = validateStep3()
+    }
+    
+    setValidationErrors(errors)
+    
+    if (Object.keys(errors).length === 0 && step < 4) {
+      setStep(step + 1)
+    }
+  }
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value })
+    
+    // Clear validation error when user starts typing
+    if (validationErrors[field]) {
+      setValidationErrors((prev) => {
+        const updated = { ...prev }
+        delete updated[field]
+        return updated
+      })
+    }
+  }
+
+  const handleFileChange = (file: File | null) => {
+    setFormData({ ...formData, cv: file })
+    
+    // Clear CV validation error when user uploads a file
+    if (validationErrors.cv && file) {
+      setValidationErrors((prev) => {
+        const updated = { ...prev }
+        delete updated.cv
+        return updated
+      })
+    }
   }
 
   const handlePrev = () => {
@@ -105,31 +188,49 @@ export default function TalentPool() {
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-foreground mb-6">Personal Information</h3>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Full Name</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Full Name *</label>
                 <input
                   type="text"
                   value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  className={`w-full px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 transition-colors ${
+                    validationErrors.fullName
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-border focus:ring-primary/20"
+                  }`}
                   placeholder="Your full name"
                 />
+                {validationErrors.fullName && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.fullName}</p>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Email Address</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Email Address *</label>
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className={`w-full px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 transition-colors ${
+                    validationErrors.email
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-border focus:ring-primary/20"
+                  }`}
                   placeholder="your@email.com"
                 />
+                {validationErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Country</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Country *</label>
                 <select
                   value={formData.country}
-                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  onChange={(e) => handleInputChange('country', e.target.value)}
+                  className={`w-full px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 transition-colors ${
+                    validationErrors.country
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-border focus:ring-primary/20"
+                  }`}
                 >
                   <option value="">Select your country</option>
                   {countries.map((c) => (
@@ -138,6 +239,9 @@ export default function TalentPool() {
                     </option>
                   ))}
                 </select>
+                {validationErrors.country && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>
+                )}
               </div>
             </div>
           )}
@@ -147,11 +251,15 @@ export default function TalentPool() {
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-foreground mb-6">Professional Profile</h3>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Field of Experience</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Field of Experience *</label>
                 <select
                   value={formData.fieldOfExperience}
-                  onChange={(e) => setFormData({ ...formData, fieldOfExperience: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  onChange={(e) => handleInputChange('fieldOfExperience', e.target.value)}
+                  className={`w-full px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 transition-colors ${
+                    validationErrors.fieldOfExperience
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-border focus:ring-primary/20"
+                  }`}
                 >
                   <option value="">Select your field</option>
                   {fields.map((f) => (
@@ -160,13 +268,20 @@ export default function TalentPool() {
                     </option>
                   ))}
                 </select>
+                {validationErrors.fieldOfExperience && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.fieldOfExperience}</p>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Experience Level</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Experience Level *</label>
                 <select
                   value={formData.experienceLevel}
-                  onChange={(e) => setFormData({ ...formData, experienceLevel: e.target.value })}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  onChange={(e) => handleInputChange('experienceLevel', e.target.value)}
+                  className={`w-full px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 transition-colors ${
+                    validationErrors.experienceLevel
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-border focus:ring-primary/20"
+                  }`}
                 >
                   <option value="">Select your level</option>
                   {levels.map((l) => (
@@ -175,16 +290,26 @@ export default function TalentPool() {
                     </option>
                   ))}
                 </select>
+                {validationErrors.experienceLevel && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.experienceLevel}</p>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Upload CV</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Upload CV *</label>
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx"
-                  onChange={(e) => setFormData({ ...formData, cv: e.target.files?.[0] || null })}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+                  className={`w-full px-4 py-2 border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 transition-colors ${
+                    validationErrors.cv
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-border focus:ring-primary/20"
+                  }`}
                 />
                 <p className="text-xs text-muted-foreground mt-1">PDF, DOC, or DOCX (Max 5MB)</p>
+                {validationErrors.cv && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.cv}</p>
+                )}
               </div>
             </div>
           )}
@@ -192,7 +317,7 @@ export default function TalentPool() {
           {/* Step 3: Skills */}
           {step === 3 && (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-foreground mb-6">Select Your Skills</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-6">Select Your Skills *</h3>
               <p className="text-muted-foreground mb-4">Choose all that apply</p>
               <div className="grid grid-cols-2 gap-3">
                 {skillOptions.map((skill) => (
@@ -202,20 +327,25 @@ export default function TalentPool() {
                     className={`p-3 rounded-lg border-2 transition-all text-left font-medium ${
                       formData.skills.includes(skill)
                         ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-background text-foreground hover:border-primary/50"
+                        : `bg-background text-foreground hover:border-primary/50 ${
+                            validationErrors.skills ? "border-red-500" : "border-border"
+                          }`
                     }`}
                   >
                     {skill}
                   </button>
                 ))}
               </div>
+              {validationErrors.skills && (
+                <p className="text-red-500 text-sm mt-2">{validationErrors.skills}</p>
+              )}
             </div>
           )}
 
           {/* Step 4: Video */}
           {step === 4 && (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-foreground mb-6">Video Introduction</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-6">Video Introduction (Optional)</h3>
               <div className="bg-muted/50 p-6 rounded-lg border-2 border-dashed border-border">
                 <p className="text-foreground font-medium mb-2">Record or Upload Your Video</p>
                 <p className="text-muted-foreground text-sm mb-4">
@@ -225,9 +355,9 @@ export default function TalentPool() {
                 <input
                   type="text"
                   value={formData.videoUrl}
-                  onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                  onChange={(e) => handleInputChange('videoUrl', e.target.value)}
                   placeholder="Paste video URL or upload file"
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>

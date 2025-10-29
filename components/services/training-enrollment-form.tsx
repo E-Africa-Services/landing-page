@@ -42,10 +42,63 @@ export default function TrainingEnrollmentForm({
   })
 
   const [submitted, setSubmitted] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+
+  // Validation functions for each step
+  const validateStep1 = () => {
+    const errors: Record<string, string> = {}
+    
+    if (!formData.firstName.trim()) errors.firstName = "First name is required"
+    if (!formData.lastName.trim()) errors.lastName = "Last name is required"
+    if (!formData.email.trim()) {
+      errors.email = "Email is required"
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Please enter a valid email address"
+    }
+    if (!formData.phone.trim()) errors.phone = "Phone number is required"
+    if (!formData.country) errors.country = "Country is required"
+    
+    return errors
+  }
+
+  const validateStep2 = () => {
+    const errors: Record<string, string> = {}
+    
+    if (!formData.fieldOfExperience) errors.fieldOfExperience = "Field of experience is required"
+    if (!formData.experienceLevel) errors.experienceLevel = "Experience level is required"
+    if (formData.skills.length === 0) errors.skills = "Please select at least one skill"
+    
+    return errors
+  }
+
+  const handleNextStep = () => {
+    let errors: Record<string, string> = {}
+    
+    if (step === 1) {
+      errors = validateStep1()
+    } else if (step === 2) {
+      errors = validateStep2()
+    }
+    
+    setValidationErrors(errors)
+    
+    if (Object.keys(errors).length === 0) {
+      setStep(step + 1)
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    
+    // Clear validation error when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => {
+        const updated = { ...prev }
+        delete updated[name]
+        return updated
+      })
+    }
   }
 
   const handleSkillToggle = (skill: string) => {
@@ -53,6 +106,15 @@ export default function TrainingEnrollmentForm({
       ...prev,
       skills: prev.skills.includes(skill) ? prev.skills.filter((s) => s !== skill) : [...prev.skills, skill],
     }))
+    
+    // Clear skills validation error when user selects a skill
+    if (validationErrors.skills) {
+      setValidationErrors((prev) => {
+        const updated = { ...prev }
+        delete updated.skills
+        return updated
+      })
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -129,9 +191,16 @@ export default function TrainingEnrollmentForm({
                   value={formData.firstName}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+                  className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                    validationErrors.firstName 
+                      ? "border-red-500 focus:border-red-500" 
+                      : "border-border focus:border-primary"
+                  }`}
                   placeholder="John"
                 />
+                {validationErrors.firstName && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.firstName}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Last Name *</label>
@@ -141,9 +210,16 @@ export default function TrainingEnrollmentForm({
                   value={formData.lastName}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+                  className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                    validationErrors.lastName 
+                      ? "border-red-500 focus:border-red-500" 
+                      : "border-border focus:border-primary"
+                  }`}
                   placeholder="Doe"
                 />
+                {validationErrors.lastName && (
+                  <p className="text-red-500 text-sm mt-1">{validationErrors.lastName}</p>
+                )}
               </div>
             </div>
 
@@ -155,9 +231,16 @@ export default function TrainingEnrollmentForm({
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+                className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                  validationErrors.email 
+                    ? "border-red-500 focus:border-red-500" 
+                    : "border-border focus:border-primary"
+                }`}
                 placeholder="john@example.com"
               />
+              {validationErrors.email && (
+                <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+              )}
             </div>
 
             <div>
@@ -168,9 +251,16 @@ export default function TrainingEnrollmentForm({
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+                className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                  validationErrors.phone 
+                    ? "border-red-500 focus:border-red-500" 
+                    : "border-border focus:border-primary"
+                }`}
                 placeholder="+234 XXX XXX XXXX"
               />
+              {validationErrors.phone && (
+                <p className="text-red-500 text-sm mt-1">{validationErrors.phone}</p>
+              )}
             </div>
 
             <div>
@@ -180,7 +270,11 @@ export default function TrainingEnrollmentForm({
                 value={formData.country}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+                className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                  validationErrors.country 
+                    ? "border-red-500 focus:border-red-500" 
+                    : "border-border focus:border-primary"
+                }`}
               >
                 <option value="">Select your country</option>
                 <option value="Nigeria">Nigeria</option>
@@ -192,6 +286,9 @@ export default function TrainingEnrollmentForm({
                 <option value="Egypt">Egypt</option>
                 <option value="Other">Other</option>
               </select>
+              {validationErrors.country && (
+                <p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>
+              )}
             </div>
           </>
         )}
@@ -206,7 +303,11 @@ export default function TrainingEnrollmentForm({
                 value={formData.fieldOfExperience}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+                className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                  validationErrors.fieldOfExperience 
+                    ? "border-red-500 focus:border-red-500" 
+                    : "border-border focus:border-primary"
+                }`}
               >
                 <option value="">Select your field</option>
                 <option value="Technology">Technology</option>
@@ -218,6 +319,9 @@ export default function TrainingEnrollmentForm({
                 <option value="Human Resources">Human Resources</option>
                 <option value="Other">Other</option>
               </select>
+              {validationErrors.fieldOfExperience && (
+                <p className="text-red-500 text-sm mt-1">{validationErrors.fieldOfExperience}</p>
+              )}
             </div>
 
             <div>
@@ -227,7 +331,11 @@ export default function TrainingEnrollmentForm({
                 value={formData.experienceLevel}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+                className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                  validationErrors.experienceLevel 
+                    ? "border-red-500 focus:border-red-500" 
+                    : "border-border focus:border-primary"
+                }`}
               >
                 <option value="">Select your level</option>
                 <option value="Entry Level">Entry Level (0-2 years)</option>
@@ -235,6 +343,9 @@ export default function TrainingEnrollmentForm({
                 <option value="Senior">Senior (5-10 years)</option>
                 <option value="Expert">Expert (10+ years)</option>
               </select>
+              {validationErrors.experienceLevel && (
+                <p className="text-red-500 text-sm mt-1">{validationErrors.experienceLevel}</p>
+              )}
             </div>
 
             <div>
@@ -257,13 +368,18 @@ export default function TrainingEnrollmentForm({
                     className={`px-4 py-2 rounded-lg border transition-all ${
                       formData.skills.includes(skill)
                         ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
+                        : `bg-background hover:border-primary ${
+                            validationErrors.skills ? "border-red-500" : "border-border"
+                          }`
                     }`}
                   >
                     {skill}
                   </button>
                 ))}
               </div>
+              {validationErrors.skills && (
+                <p className="text-red-500 text-sm mt-2">{validationErrors.skills}</p>
+              )}
             </div>
           </>
         )}
@@ -319,7 +435,7 @@ export default function TrainingEnrollmentForm({
           {step < 3 ? (
             <button
               type="button"
-              onClick={() => setStep(step + 1)}
+              onClick={handleNextStep}
               className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold"
             >
               Next

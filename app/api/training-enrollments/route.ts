@@ -70,7 +70,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create enrollment" }, { status: 500 })
     }
 
-    // TODO: Send confirmation email
+    // TODO: Send confirmation email 
+
     // TODO: If free training, send access details
 
     return NextResponse.json({ success: true, data, requiresPayment: price > 0 }, { status: 201 })

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 
 export default function TrainingSection() {
   const [timeLeft, setTimeLeft] = useState({
@@ -50,9 +51,9 @@ export default function TrainingSection() {
               <p className="text-muted-foreground mb-6">
                 Join our exclusive free training session on November 29th. Learn industry secrets and get certified.
               </p>
-              <button className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold">
+              <Link href="/training-enrollment?training=Free Training Webinar" className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold">
                 Register Now
-              </button>
+              </Link>
             </div>
 
             {/* Countdown Timer */}
@@ -109,9 +110,9 @@ export default function TrainingSection() {
                   Personal branding mastery
                 </li>
               </ul>
-              <button className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors font-semibold">
+              <Link href="/training-enrollment?training=LinkedIn Optimization" className="inline-block px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors font-semibold">
                 Join 30-Day Challenge
-              </button>
+              </Link>
             </div>
           </div>
         </div>

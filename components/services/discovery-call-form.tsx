@@ -22,20 +22,54 @@ export default function DiscoveryCallForm({
   })
 
   const [submitted, setSubmitted] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+
+  // Validation function
+  const validateForm = () => {
+    const errors: Record<string, string> = {}
+    
+    if (!formData.name.trim()) errors.name = "Name is required"
+    if (!formData.businessName.trim()) errors.businessName = "Business name is required"
+    if (!formData.email.trim()) {
+      errors.email = "Email is required"
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Please enter a valid email address"
+    }
+    if (!formData.phone.trim()) errors.phone = "Phone number is required"
+    if (!formData.service) errors.service = "Please select a service"
+    if (!formData.requirements.trim()) errors.requirements = "Please describe your requirements"
+    
+    return errors
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    
+    // Clear validation error when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => {
+        const updated = { ...prev }
+        delete updated[name]
+        return updated
+      })
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Discovery call form submitted:", formData)
-    setSubmitted(true)
-    setTimeout(() => {
-      onBack()
-      setSubmitted(false)
-    }, 3000)
+    
+    const errors = validateForm()
+    setValidationErrors(errors)
+    
+    if (Object.keys(errors).length === 0) {
+      console.log("[v0] Discovery call form submitted:", formData)
+      setSubmitted(true)
+      setTimeout(() => {
+        onBack()
+        setSubmitted(false)
+      }, 3000)
+    }
   }
 
   if (submitted) {
@@ -74,9 +108,16 @@ export default function DiscoveryCallForm({
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+              className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                validationErrors.name 
+                  ? "border-red-500 focus:border-red-500" 
+                  : "border-border focus:border-primary"
+              }`}
               placeholder="John Doe"
             />
+            {validationErrors.name && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Business Name *</label>
@@ -86,9 +127,16 @@ export default function DiscoveryCallForm({
               value={formData.businessName}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+              className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                validationErrors.businessName 
+                  ? "border-red-500 focus:border-red-500" 
+                  : "border-border focus:border-primary"
+              }`}
               placeholder="Your Company"
             />
+            {validationErrors.businessName && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.businessName}</p>
+            )}
           </div>
         </div>
 
@@ -101,9 +149,16 @@ export default function DiscoveryCallForm({
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+              className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                validationErrors.email 
+                  ? "border-red-500 focus:border-red-500" 
+                  : "border-border focus:border-primary"
+              }`}
               placeholder="john@company.com"
             />
+            {validationErrors.email && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Phone *</label>
@@ -113,9 +168,16 @@ export default function DiscoveryCallForm({
               value={formData.phone}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+              className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+                validationErrors.phone 
+                  ? "border-red-500 focus:border-red-500" 
+                  : "border-border focus:border-primary"
+              }`}
               placeholder="+234 XXX XXX XXXX"
             />
+            {validationErrors.phone && (
+              <p className="text-red-500 text-sm mt-1">{validationErrors.phone}</p>
+            )}
           </div>
         </div>
 
@@ -138,7 +200,11 @@ export default function DiscoveryCallForm({
             value={formData.service}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors"
+            className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors ${
+              validationErrors.service 
+                ? "border-red-500 focus:border-red-500" 
+                : "border-border focus:border-primary"
+            }`}
           >
             <option value="">Select a service</option>
             <option value="Customer Success Training">Customer Success Training</option>
@@ -149,6 +215,9 @@ export default function DiscoveryCallForm({
             <option value="Workforce Development">Workforce Development</option>
             <option value="IoT Consultancy & Training">IoT Consultancy & Training</option>
           </select>
+          {validationErrors.service && (
+            <p className="text-red-500 text-sm mt-1">{validationErrors.service}</p>
+          )}
         </div>
 
         <div>
@@ -159,9 +228,16 @@ export default function DiscoveryCallForm({
             onChange={handleChange}
             required
             rows={4}
-            className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:border-primary transition-colors resize-none"
+            className={`w-full px-4 py-2 bg-background border rounded-lg focus:outline-none transition-colors resize-none ${
+              validationErrors.requirements 
+                ? "border-red-500 focus:border-red-500" 
+                : "border-border focus:border-primary"
+            }`}
             placeholder="Tell us about your specific needs and goals..."
           />
+          {validationErrors.requirements && (
+            <p className="text-red-500 text-sm mt-1">{validationErrors.requirements}</p>
+          )}
         </div>
 
         <button

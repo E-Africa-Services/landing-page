@@ -26,7 +26,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    url: "https://yourdomain.com",
+    url: "https://www.eafricaservices.com",
     title: "E-Africa Services",
     description: "Delivering innovative digital solutions across Africa.",
     images: ["https://www.eafricaservices.com/og-image.png"],

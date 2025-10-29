@@ -1,0 +1,22 @@
+{
+ "rewrites": [
+    {
+      "source": "/amplify.app/:path*",
+      "destination": "https://amplify-app.vercel.app/:path*"
+    },
+    {
+      "source": "/amplify.app",
+      "destination": "https://amplify-app.vercel.app/"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/amplify.app/:path*",
+      "headers": [
+        { "key": "x-proxy-app", "value": "amplify" }
+      ]
+    }
+  ]
+}
+
+

@@ -1,42 +1,126 @@
 "use client"
 
 import { useSearchParams, useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Navigation from "@/components/navigation"
 import Footer from "@/components/footer"
+import { getFormattedTrainingPrice, getTrainingPrice, isFreeTraining } from "@/lib/training-prices"
+import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "@/lib/paystack"
 
 export default function PaymentPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const training = searchParams.get("training")
   const dataParam = searchParams.get("data")
+  const enrollmentId = searchParams.get("enrollmentId")
+  const paymentReference = searchParams.get("paymentReference")
+  
   const [loading, setLoading] = useState(false)
+  const [currency, setCurrency] = useState<SupportedCurrency>('USD')
+  const [formData, setFormData] = useState<any>(null)
 
-  const trainingPrices: Record<string, number> = {
-    "LinkedIn Optimization": 49,
-    "CV Optimization": 29,
-    "AI Automation Training": 79,
-    "Sales & Rebranding": 59,
-    "Voice Coaching & Tonality": 39,
-    "CRM Training": 49,
-    "AI Prompt Engineering": 69,
-    "Email Marketing": 44,
-    "Interview Preparation": 34,
-    "Personal Goal Setting": 54,
+  useEffect(() => {
+    if (dataParam) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(dataParam))
+        setFormData(decoded)
+        if (decoded.currency) {
+          setCurrency(decoded.currency)
+        }
+      } catch (error) {
+        console.error("Failed to parse form data:", error)
+      }
+    }
+  }, [dataParam])
+
+  const price = training ? getTrainingPrice(training, currency) : 0
+  const formattedPrice = training ? getFormattedTrainingPrice(training, currency) : '$0'
+  const currencyInfo = SUPPORTED_CURRENCIES[currency]
+
+  if (!training || !enrollmentId || !paymentReference) {
+    return (
+      <main className="min-h-screen bg-background">
+        <Navigation />
+        <section className="min-h-[calc(100vh-64px)] flex items-center justify-center py-20">
+          <div className="max-w-2xl mx-auto px-4 w-full text-center">
+            <h1 className="text-2xl font-bold text-foreground mb-4">Invalid Payment Link</h1>
+            <p className="text-muted-foreground mb-6">This payment link is invalid or has expired.</p>
+            <button 
+              onClick={() => router.push('/')}
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Return Home
+            </button>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    )
   }
 
-  const price = trainingPrices[training || ""] || 0
+  if (isFreeTraining(training)) {
+    return (
+      <main className="min-h-screen bg-background">
+        <Navigation />
+        <section className="min-h-[calc(100vh-64px)] flex items-center justify-center py-20">
+          <div className="max-w-2xl mx-auto px-4 w-full text-center">
+            <h1 className="text-2xl font-bold text-foreground mb-4">No Payment Required</h1>
+            <p className="text-muted-foreground mb-6">This training is free! You should have received access details via email.</p>
+            <button 
+              onClick={() => router.push('/')}
+              className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Return Home
+            </button>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    )
+  }
 
-  const handlePaystackPayment = () => {
+  const handlePayment = async () => {
+    if (!formData || !enrollmentId || !paymentReference) return
+
     setLoading(true)
-    console.log("[v0] Initiating Paystack payment for:", training, "Amount:", price)
+    try {
+      // Initialize payment with Paystack
+      const response = await fetch('/api/payment/initialize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          enrollmentId,
+          paymentReference,
+          currency,
+          amount: price,
+          email: formData.email,
+          fullName: formData.fullName || `${formData.firstName} ${formData.lastName}`,
+        }),
+      })
 
-    // This would integrate with Paystack API
-    // For now, we'll show a success message after a delay
-    setTimeout(() => {
-      alert("Payment successful! You will receive a confirmation email shortly.")
-      router.push("/")
-    }, 2000)
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to initialize payment')
+      }
+
+      const { authorization_url, access_code } = result.data
+
+      // Redirect to Paystack payment page
+      window.location.href = authorization_url
+
+    } catch (error) {
+      console.error('Payment initialization failed:', error)
+      alert('Failed to initialize payment. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCurrencyChange = (newCurrency: SupportedCurrency) => {
+    setCurrency(newCurrency)
   }
 
   return (
@@ -58,9 +142,26 @@ export default function PaymentPage() {
                     <span className="text-muted-foreground">Training Program:</span>
                     <span className="font-medium text-foreground">{training}</span>
                   </div>
+                  
+                  {/* Currency Selection */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Currency:</span>
+                    <select
+                      value={currency}
+                      onChange={(e) => handleCurrencyChange(e.target.value as SupportedCurrency)}
+                      className="px-3 py-1 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      {Object.entries(SUPPORTED_CURRENCIES).map(([code, info]) => (
+                        <option key={code} value={code}>
+                          {info.symbol} {code} - {info.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="border-t border-border pt-3 flex justify-between items-center">
                     <span className="font-semibold text-foreground">Total Amount:</span>
-                    <span className="text-2xl font-bold text-primary">${price}</span>
+                    <span className="text-2xl font-bold text-primary">{formattedPrice}</span>
                   </div>
                 </div>
               </div>
@@ -98,7 +199,7 @@ export default function PaymentPage() {
 
               {/* Payment Button */}
               <button
-                onClick={handlePaystackPayment}
+                onClick={handlePayment}
                 disabled={loading}
                 className="w-full px-6 py-4 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
@@ -117,7 +218,7 @@ export default function PaymentPage() {
                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                       />
                     </svg>
-                    Pay ${price} with Paystack
+                    Pay {formattedPrice} with Paystack
                   </>
                 )}
               </button>

@@ -2,6 +2,7 @@
 // POST /api/discovery-calls
 
 import { createClient } from "@/lib/supabase-server"
+import { sendDiscoveryCallEmails } from "@/lib/email"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -38,8 +39,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to submit discovery call request" }, { status: 500 })
     }
 
-    // TODO: Send confirmation email to user
-    // TODO: Send notification to admin
+    // Send confirmation emails to client and company
+    // Don't let email failures block the discovery call submission
+    if (data && data[0]) {
+      const discoveryCall = data[0]
+      
+      // Send emails asynchronously (don't wait for completion)
+      sendDiscoveryCallEmails(discoveryCall)
+        .then((result) => {
+          console.log('📧 Discovery call email results:', {
+            clientEmailSent: result.clientEmailSent,
+            companyEmailSent: result.companyEmailSent,
+            discoveryCallId: discoveryCall.id,
+          })
+        })
+        .catch((err) => {
+          console.error('❌ Error in discovery call email sending:', err)
+        })
+    }
 
     return NextResponse.json({ success: true, data }, { status: 201 })
   } catch (error) {

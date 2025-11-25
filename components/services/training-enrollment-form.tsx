@@ -4,21 +4,8 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-
-const trainingPrices: Record<string, number> = {
-  "LinkedIn Optimization": 49,
-  "CV Optimization": 29,
-  "AI Automation Training": 79,
-  "Sales & Rebranding": 59,
-  "Voice Coaching & Tonality": 39,
-  "CRM Training": 49,
-  "AI Prompt Engineering": 69,
-  "Email Marketing": 44,
-  "Interview Preparation": 34,
-  "Personal Goal Setting": 54,
-  "Job Opportunities": 0,
-  "Talent Staffing": 0,
-}
+import { getTrainingPrice, getFormattedTrainingPrice, isFreeTraining } from "@/lib/training-prices"
+import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "@/lib/paystack"
 
 export default function TrainingEnrollmentForm({
   training,
@@ -29,6 +16,9 @@ export default function TrainingEnrollmentForm({
 }) {
   const router = useRouter()
   const [step, setStep] = useState(1)
+  const [selectedCurrency, setSelectedCurrency] = useState<SupportedCurrency>('USD')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState("")
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -117,27 +107,90 @@ export default function TrainingEnrollmentForm({
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Training enrollment form submitted:", formData)
+    
+    if (!training) return
+    
+    // Validate current step
+    let errors: Record<string, string> = {}
+    if (step === 1) errors = validateStep1()
+    else if (step === 2) errors = validateStep2()
+    else if (step === 3) {
+      // Step 3 validation (area of study)
+      if (!formData.areaOfStudy.trim()) {
+        errors.areaOfStudy = "Area of study is required"
+      }
+    }
+    
+    setValidationErrors(errors)
+    
+    if (Object.keys(errors).length > 0) {
+      return
+    }
 
-    const price = trainingPrices[training || ""] || 0
+    if (step < 3) {
+      setStep(step + 1)
+      return
+    }
 
-    if (price > 0) {
-      // Redirect to payment page
-      const encodedData = encodeURIComponent(JSON.stringify(formData))
-      router.push(`/payment?training=${encodeURIComponent(training || "")}&data=${encodedData}`)
-    } else {
-      // Free training - just show success
-      setSubmitted(true)
-      setTimeout(() => {
-        onBack()
-        setSubmitted(false)
-      }, 3000)
+    // Final submission
+    try {
+      setIsSubmitting(true)
+      setSubmitError("")
+
+      console.log("Submitting training enrollment:", { ...formData, training, currency: selectedCurrency })
+
+      const response = await fetch('/api/training-enrollments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          trainingProgram: training,
+          currency: selectedCurrency
+        }),
+      })
+
+      console.log("Response status:", response.status)
+      const result = await response.json()
+      console.log("Response data:", result)
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to submit enrollment')
+      }
+
+      const { enrollmentId, paymentReference, requiresPayment } = result.data
+
+      console.log("Enrollment created:", { enrollmentId, paymentReference, requiresPayment })
+
+      if (requiresPayment) {
+        // Redirect to payment page with enrollment details
+        const paymentUrl = `/payment?training=${encodeURIComponent(training)}&enrollmentId=${enrollmentId}&paymentReference=${paymentReference}&currency=${selectedCurrency}`
+        console.log("Redirecting to payment:", paymentUrl)
+        window.location.href = paymentUrl
+      } else {
+        // Free training - show success message
+        console.log("Free training - showing success message")
+        setSubmitted(true)
+        setTimeout(() => {
+          onBack()
+          setSubmitted(false)
+        }, 3000)
+      }
+
+    } catch (error) {
+      console.error("Training enrollment submission error:", error)
+      setSubmitError(error instanceof Error ? error.message : "Failed to submit enrollment. Please try again.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  const price = trainingPrices[training || ""] || 0
+  const price = training ? getTrainingPrice(training, selectedCurrency) : 0
+  const formattedPrice = training ? getFormattedTrainingPrice(training, selectedCurrency) : '$0'
+  const isFreeTrain = training ? isFreeTraining(training) : false
 
   if (submitted) {
     return (
@@ -411,12 +464,41 @@ export default function TrainingEnrollmentForm({
                 <p>
                   <span className="font-medium text-foreground">Email:</span> {formData.email}
                 </p>
-                {price > 0 && (
+                
+                {/* Currency Selection */}
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-foreground">Currency:</span>
+                  <select
+                    value={selectedCurrency}
+                    onChange={(e) => setSelectedCurrency(e.target.value as SupportedCurrency)}
+                    className="px-2 py-1 bg-background border border-border rounded text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    {Object.entries(SUPPORTED_CURRENCIES).map(([code, info]) => (
+                      <option key={code} value={code}>
+                        {info.symbol} {code}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {!isFreeTrain && (
                   <p>
-                    <span className="font-medium text-foreground">Price:</span> ${price}
+                    <span className="font-medium text-foreground">Price:</span> {formattedPrice}
+                  </p>
+                )}
+                
+                {isFreeTrain && (
+                  <p className="text-green-600 font-medium">
+                    ✅ This training is free!
                   </p>
                 )}
               </div>
+              
+              {submitError && (
+                <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                  <p className="text-red-600 text-sm">{submitError}</p>
+                </div>
+              )}
             </div>
           </>
         )}
@@ -443,9 +525,17 @@ export default function TrainingEnrollmentForm({
           ) : (
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold"
+              disabled={isSubmitting}
+              className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {price > 0 ? "Proceed to Payment" : "Complete Enrollment"}
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+                  Processing...
+                </>
+              ) : (
+                !isFreeTrain ? "Proceed to Payment" : "Complete Enrollment"
+              )}
             </button>
           )}
         </div>

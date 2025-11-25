@@ -37,7 +37,9 @@ export type TrainingEnrollment = {
   area_of_study?: string
   training_program: string
   price: number
-  enrollment_status: "active" | "completed" | "cancelled" | "paused"
+  currency: string
+  payment_reference?: string
+  enrollment_status: "pending" | "active" | "completed" | "cancelled" | "paused"
   payment_status: "pending" | "completed" | "failed" | "refunded"
   created_at: string
   updated_at: string
@@ -70,7 +72,12 @@ export type Payment = {
   payment_status: "pending" | "completed" | "failed" | "refunded"
   paystack_transaction_id?: string
   paystack_reference?: string
+  paystack_authorization_code?: string
+  paystack_access_code?: string
   payment_method: string
+  payment_gateway: string
+  metadata: Record<string, any>
+  fees_paid: number
   created_at: string
   updated_at: string
   completed_at?: string
